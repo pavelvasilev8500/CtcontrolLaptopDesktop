@@ -1,8 +1,10 @@
-﻿using Prism.Commands;
+﻿using ModuleSettings.Settings;
+using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Regions;
 using ResourcesLibrary.Resources.Wallpapers.Classes;
 using System;
+using System.Linq;
 using System.Windows;
 
 namespace ModuleSettings.ViewModels
@@ -15,15 +17,12 @@ namespace ModuleSettings.ViewModels
         public DelegateCommand NextCommand { get; set; }
         public DelegateCommand ApplyCommand { get; set; }
         public DelegateCommand PreviousCommand { get; set; }
-        public bool KeepAlive
-        {
-            get { return false; }
-        }
+        public bool KeepAlive => false;
         public WallpaperSettingsViewModel(IRegionManager regionManager)
         {
             _regionManager = regionManager;
-            for (int i = 0; i < Wallpapers.m_Wallpapers.Count; i++)
-                if (Wallpapers.m_Wallpapers[i] == Properties.Settings.Default.DefaultWallpaper)
+            for (int i = 0; i < Wallpapers.WallpaperDictionaries.Keys.Count; i++)
+                if (Wallpapers.WallpaperDictionaries.Keys.ToList()[i] == AppSettings.Wallpaper)
                     SelectedItem = i;
             NavigateCommand = new DelegateCommand<string>(Navigate);
             NextCommand = new DelegateCommand(Next);
@@ -38,21 +37,20 @@ namespace ModuleSettings.ViewModels
         private void Next()
         {
             SelectedItem++;
-            if (SelectedItem >= Wallpapers.m_Wallpapers.Count)
+            if (SelectedItem >= Wallpapers.WallpaperDictionaries.Keys.Count)
                 SelectedItem = 0;
-            Wallpapers.Wallpaper = Wallpapers.m_Wallpapers[SelectedItem];
+            Wallpapers.Wallpaper = Wallpapers.WallpaperDictionaries.Keys.ToList()[SelectedItem];
         }
         private void Apply()
         {
-            Properties.Settings.Default.DefaultWallpaper = Wallpapers.Wallpaper;
-            Properties.Settings.Default.Save();
+            AppSettings.Wallpaper = Wallpapers.Wallpaper;
         }
         private void Previous()
         {
             if (SelectedItem <= 0)
-                SelectedItem = Wallpapers.m_Wallpapers.Count;
+                SelectedItem = Wallpapers.WallpaperDictionaries.Keys.Count;
             SelectedItem--;
-            Wallpapers.Wallpaper = Wallpapers.m_Wallpapers[SelectedItem];
+            Wallpapers.Wallpaper = Wallpapers.WallpaperDictionaries.Keys.ToList()[SelectedItem];
         }
 
         public void ConfirmNavigationRequest(NavigationContext navigationContext, Action<bool> continuationCallback)

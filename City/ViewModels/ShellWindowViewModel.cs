@@ -10,18 +10,20 @@ using System.Diagnostics;
 using Prism.Events;
 using ClassesLibrary.Client;
 using ClassesLibrary.Classes;
-using ClassesLibrary.ServerWork;
-using System.Threading;
 using System.Windows;
 using System.Collections.Generic;
 using City.MainWindowClasses;
 using WarningDialog.Classes;
+using ClassesLibrary.SystemInfo;
+using ModuleSettings.Settings;
 using City.Models;
+using Newtonsoft.Json.Serialization;
 
 namespace City.ViewModels
 {
     class ShellWindowViewModel : BindableBase
     {
+        private IRegion _region;
         private readonly IRegionManager _regionManager;
         IEventAggregator _ea;
         private ObservableCollection<object> _views = new ObservableCollection<object>();
@@ -72,87 +74,64 @@ namespace City.ViewModels
             set { SetProperty(ref isButtonEnabled, value); }
         }
 
-        CancellationTokenSource cts = new CancellationTokenSource();
         public ShellWindowViewModel(IRegionManager regionManager, IEventAggregator ea)
         {
+            SystemInfo.computer.Open();
             _ea = ea;
             IsLaptop = LaptopCheck.IsPcLaptop();
             new CheckProgramStart(Process.GetCurrentProcess());
             new RunAsAdministrator();
             new BatteryCheck();
-            Wallpapers.Wallpaper = ModuleSettings.Properties.Settings.Default.DefaultWallpaper;
-            Languages.Language = ModuleSettings.Properties.Settings.Default.DefaultLanguage;
             CloseAppCommand = new DelegateCommand(CloseApp);
             NavigateCommand = new DelegateCommand<string>(Navigate);
             _regionManager = regionManager;
             _regionManager.Regions.CollectionChanged += Regions_CollectionChanged;
         }
+
         private void Regions_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             if (e.Action == NotifyCollectionChangedAction.Add)
             {
-                var region = (IRegion)e.NewItems[0];
-                region.Views.CollectionChanged += Views_CollectionChanged;
+                _region = (IRegion)e.NewItems[0];
+                _region.Views.CollectionChanged += Views_CollectionChanged;
             }
         }
+
         private void Views_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             if (e.Action == NotifyCollectionChangedAction.Add)
             {
+                var a = _region.Views;
+                var b = a.GetType();
                 Views.Add(e.NewItems[0].GetType().Name);
                 NewObject = e.NewItems[0].GetType().Name;
-                if(NewObject == "MainView")
+                switch(NewObject)
                 {
-                    MarkerVivibiliti = Visibility.Visible;
-                    IsButtonEnabled = true;
-                    _oldViews.Clear();
-                    _oldViews.Add(e.NewItems[0].GetType().Name);
-                }
-                if (NewObject == "ControlView")
-                {
-                    MarkerVivibiliti = Visibility.Visible;
-                    IsButtonEnabled = true;
-                    _oldViews.Clear();
-                    _oldViews.Add(e.NewItems[0].GetType().Name);
-                }
-                if (NewObject == "MobileView")
-                {
-                    MarkerVivibiliti = Visibility.Visible;
-                    IsButtonEnabled = true;
-                    _oldViews.Clear();
-                    _oldViews.Add(e.NewItems[0].GetType().Name);
-                }
-                if (NewObject == "MainSettingsView")
-                {
-                    MarkerVivibiliti = Visibility.Hidden;
-                    MainButtonVisible = Visibility.Hidden;
-                    BackButtonVisible = Visibility.Visible;
-                    IsButtonEnabled = false;
-                    CommandNavigationParameter = _oldViews[_oldViews.Count-1];
-                }
-                if (NewObject == "LanguageSettingsView")
-                {
-                    MarkerVivibiliti = Visibility.Hidden;
-                    MainButtonVisible = Visibility.Hidden;
-                    BackButtonVisible = Visibility.Visible;
-                    IsButtonEnabled = false;
-                    CommandNavigationParameter = "MainSettingsView";
-                }
-                if (NewObject == "WallpaperSettingsView")
-                {
-                    MarkerVivibiliti = Visibility.Hidden;
-                    MainButtonVisible = Visibility.Hidden;
-                    BackButtonVisible = Visibility.Visible;
-                    IsButtonEnabled = false;
-                    CommandNavigationParameter = "MainSettingsView";
-                }
-                if (NewObject == "CommonSettingsView")
-                {
-                    MarkerVivibiliti = Visibility.Hidden;
-                    MainButtonVisible = Visibility.Hidden;
-                    BackButtonVisible = Visibility.Visible;
-                    IsButtonEnabled = false;
-                    CommandNavigationParameter = "MainSettingsView";
+                    case "MainView":
+                        OnMainViewsNavigation(e);
+                        break;
+                    case "ControlView":
+                        OnMainViewsNavigation(e);
+                        break;
+                    case "MobileView":
+                        break;
+                    case "MainSettingsView":
+                        MarkerVivibiliti = Visibility.Hidden;
+                        MainButtonVisible = Visibility.Hidden;
+                        BackButtonVisible = Visibility.Visible;
+                        IsButtonEnabled = false;
+                        CommandNavigationParameter = _oldViews[_oldViews.Count - 1];
+                        SettingsInitialazation.Set();
+                        break;
+                    case "LanguageSettingsView":
+                        OnSettingNavigation(e);
+                        break;
+                    case "WallpaperSettingsView":
+                        OnSettingNavigation(e);
+                        break;
+                    case "CommonSettingsView":
+                        OnSettingNavigation(e);
+                        break;
                 }
             }
             else if (e.Action == NotifyCollectionChangedAction.Remove)
@@ -160,6 +139,24 @@ namespace City.ViewModels
                 Views.Remove(e.OldItems[0].GetType().Name);
             }
         }
+
+        private void OnMainViewsNavigation(NotifyCollectionChangedEventArgs e)
+        {
+            MarkerVivibiliti = Visibility.Visible;
+            IsButtonEnabled = true;
+            _oldViews.Clear();
+            _oldViews.Add(e.NewItems[0].GetType().Name);
+        }
+
+        private void OnSettingNavigation(NotifyCollectionChangedEventArgs e)
+        {
+            MarkerVivibiliti = Visibility.Hidden;
+            MainButtonVisible = Visibility.Hidden;
+            BackButtonVisible = Visibility.Visible;
+            IsButtonEnabled = false;
+            CommandNavigationParameter = "MainSettingsView";
+        }
+
         private void Navigate(string navigatePath)
         {
 
@@ -184,25 +181,25 @@ namespace City.ViewModels
             {
                 MainButtonVisible = Visibility.Visible;
                 BackButtonVisible = Visibility.Hidden;
-                _ea.GetEvent<SendIdEvent>().Publish(Id());
+                //_ea.GetEvent<SendIdEvent>().Publish(Id());
             }
         }
-        private static string Id()
-        {
-            if (Properties.Settings.Default.FirstStart)
-            {
-                Properties.Settings.Default.ClientId = GenerateClientId.Id();
-                ClientId = Properties.Settings.Default.ClientId;
-                Properties.Settings.Default.FirstStart = false;
-                Properties.Settings.Default.Save();
-            }
-            else
-            {
-                ClientId = Properties.Settings.Default.ClientId;
-            }
-            return ClientId;
-        }
-        ShellModel shellModel = new ShellModel(Id());
+
+        //private static string Id()
+        //{
+        //    if (Properties.Settings.Default.FirstStart)
+        //    {
+        //        Properties.Settings.Default.ClientId = GenerateClientId.Id();
+        //        ClientId = Properties.Settings.Default.ClientId;
+        //        Properties.Settings.Default.FirstStart = false;
+        //        Properties.Settings.Default.Save();
+        //    }
+        //    else
+        //    {
+        //        ClientId = Properties.Settings.Default.ClientId;
+        //    }
+        //    return ClientId;
+        //}
 
         private void CloseApp()
         {

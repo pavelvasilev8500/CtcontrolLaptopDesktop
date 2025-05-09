@@ -69,6 +69,12 @@
                   IsEditable="False"
                   Style="{DynamicResource ComboBox}"
                   SelectedItem="{Binding SelectedItem}"
-                  ItemsSource="{Binding s_Languages}"/>
+                  ItemsSource="{Binding LanguagesCulture}">
+            <ComboBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding NativeName}" />
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
     </Grid>
 </UserControl>

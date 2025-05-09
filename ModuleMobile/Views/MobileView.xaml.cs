@@ -35,7 +35,7 @@ namespace ModuleMobile.Views
             QRCoder.QRCodeGenerator qr = new QRCoder.QRCodeGenerator();
             QRCoder.QRCodeData data = qr.CreateQrCode(id, QRCoder.QRCodeGenerator.ECCLevel.L);
             QRCoder.QRCode code = new QRCoder.QRCode(data);
-            System.Drawing.Bitmap bitmap = code.GetGraphic(20, System.Drawing.Color.White, System.Drawing.Color.Transparent, false);
+            System.Drawing.Bitmap bitmap = code.GetGraphic(20, System.Drawing.Color.Black, System.Drawing.Color.White, false);
             using (MemoryStream memory = new MemoryStream())
             {
                 bitmap.Save(memory, System.Drawing.Imaging.ImageFormat.Bmp);

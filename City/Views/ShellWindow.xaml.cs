@@ -1,4 +1,6 @@
-﻿using ClassesLibrary.Window;
+﻿using City.Models;
+using ClassesLibrary.Window;
+using Prism.Regions;
 using System;
 using System.Windows;
 using System.Windows.Media;
@@ -11,7 +13,6 @@ namespace City.Views
         TranslateTransform translate = new TranslateTransform();
         TranslateTransform translate1 = new TranslateTransform();
         TranslateTransform translate2 = new TranslateTransform();
-
         public ShellWindow()
         {
             InitializeComponent();

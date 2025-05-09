@@ -8,10 +8,15 @@ using System.Threading;
 using Prism.Events;
 using ClassesLibrary.Classes;
 using System.Windows;
+using ModuleSettings.Settings;
+using ModuleMain.Threads;
+using ModuleMain.Models;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TaskbarClock;
+using System.Windows.Forms;
 
 namespace ModuleMain.ViewModels
 {
-    public class ControlViewModel : BindableBase, IRegionMemberLifetime, IConfirmNavigationRequest
+    public class ControlViewModel : BindableBase, IConfirmNavigationRequest, IRegionMemberLifetime
     {
         private string _worktimeday;
         private string _worktimehour;
@@ -25,8 +30,8 @@ namespace ModuleMain.ViewModels
         private Visibility _batteryVisibility;
         public string WorkTimeDay
         {
-            get { return _worktimeday; }
-            set { SetProperty(ref _worktimeday, value); }
+            get => _worktimeday;
+            set => SetProperty(ref _worktimeday, value);
         }
         public string WorkTimeHour
         {
@@ -60,28 +65,18 @@ namespace ModuleMain.ViewModels
         }
         public Visibility BatteryVisibility
         {
-            get
-            {
-                return _batteryVisibility;
-            }
-            set
-            {
-                SetProperty(ref _batteryVisibility, value);
-            }
+            get => _batteryVisibility;
+            set =>  SetProperty(ref _batteryVisibility, value);
         }
         private bool IsLaptop { get; set; }
-        public bool KeepAlive
-        {
-            get { return false; }
-        }
+        public bool KeepAlive => false;
+
         public DelegateCommand<string> NavigateCommand { get; set; }
         public DelegateCommand ShutdonCommand { get; private set; }
         public DelegateCommand RestartCommand { get; private set; }
         public DelegateCommand SleepCommand { get; private set; }
-        CancellationTokenSource cts = new CancellationTokenSource();
         public ControlViewModel(IRegionManager regionManager, IEventAggregator ea)
         {
-            ThreadController();
             _regionManager = regionManager;
             _ea = ea;
             _ea.GetEvent<SendBoolEvent>().Subscribe(BoolMessageRecived);
@@ -89,6 +84,26 @@ namespace ModuleMain.ViewModels
             ShutdonCommand = new DelegateCommand(Shutdown);
             RestartCommand = new DelegateCommand(Restart);
             SleepCommand = new DelegateCommand(Sleep);
+            ThreadController.Info.CollectionChanged += _info_CollectionChanged;
+            ThreadController.Timer.Tick += UpdateSecondsTimer;
+        }
+
+        private void _info_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Replace:
+                    if (e.NewItems[0] is InfoModel im)
+                    {
+                        WorkTimeDay = im.Worktimeday;
+                        WorkTimeHour = im.Worktimehour;
+                        WorkTimeMinut = im.Worktimeminut;
+                        Batary = im.Batary;
+                        CPUtemperature = im.Cputemperature;
+                        GPUtemperature = im.Gputemperature;
+                    }
+                    break;
+            }
         }
 
         private void BoolMessageRecived(bool islaptop)
@@ -99,54 +114,10 @@ namespace ModuleMain.ViewModels
             else
                 _batteryVisibility = Visibility.Hidden;
         }
-        private void ThreadController()
+
+        private void UpdateSecondsTimer(object sender, EventArgs e)
         {
-            Thread data = new Thread(() =>
-            {
-                UpdateData();
-            });
-            Thread temperature = new Thread(() =>
-            {
-                UpdateTemerature();
-            });
-            data.Name = "UpdateDataThreadFromControl";
-            temperature.Name = "UpdateTemperatureThreadFromControl";
-            data.Start();
-            UpdateSecond();
-            temperature.Start();
-        }
-        private void UpdateData()
-        {
-            do
-            {
-                WorkTimeDay = SystemInfo.GetPcWorkTimeDay();
-                WorkTimeHour = SystemInfo.GetPcWorkTimeHour();
-                WorkTimeMinut = SystemInfo.GetPcWorkTimeMinut();
-                Batary = SystemInfo.GetNotebookBatary();
-                Thread.Sleep(1000);
-            }
-            while (!cts.IsCancellationRequested);
-        }
-        private void UpdateSecond()
-        {
-            System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
-            timer.Enabled = true;
-            timer.Tick += UpdateSecondTimer;
-            timer.Interval = 1000;
-            timer.Start();
-        }
-        private void UpdateSecondTimer(object sender, EventArgs e)
-        {
-            WorkTimeSecond = SystemInfo.GetPcWorkTimeSecond();
-        }
-        private void UpdateTemerature()
-        {
-            do
-            {
-                CPUtemperature = SystemInfo.GetTemperature().Item1;
-                GPUtemperature = SystemInfo.GetTemperature().Item2;
-            }
-            while (!cts.IsCancellationRequested);
+            WorkTimeSecond = SystemInfo.GetPcWorkTime().Item4;
         }
         private void Navigate(string navigatePath)
         {
@@ -168,7 +139,6 @@ namespace ModuleMain.ViewModels
 
         public void ConfirmNavigationRequest(NavigationContext navigationContext, Action<bool> continuationCallback)
         {
-            cts.Cancel();
             continuationCallback(true);
         }
 
