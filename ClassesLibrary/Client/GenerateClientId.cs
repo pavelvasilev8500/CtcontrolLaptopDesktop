@@ -4,9 +4,9 @@ namespace ClassesLibrary.Client
 {
     public static class GenerateClientId
     {
-        public static string Id()
+        public static (string, string) Id()
         {
-            return Guid.NewGuid().ToString();
+            return (Guid.NewGuid().ToString(), Environment.MachineName);
         }
     }
 }

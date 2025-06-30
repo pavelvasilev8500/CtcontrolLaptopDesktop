@@ -1,8 +1,12 @@
 ﻿using ClassesLibrary.Classes;
 using Prism.Events;
+using System;
 using System.IO;
 using System.Windows.Controls;
+using System.Windows.Media.Animation;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Drawing;
 
 namespace ModuleMobile.Views
 {
@@ -12,6 +16,8 @@ namespace ModuleMobile.Views
     public partial class MobileView : UserControl
     {
         IEventAggregator _ea;
+        TranslateTransform translate = new TranslateTransform();
+        private bool _switch { get; set; } = true;
         public MobileView(IEventAggregator ea)
         {
             InitializeComponent();
@@ -29,7 +35,7 @@ namespace ModuleMobile.Views
             QRCoder.QRCodeGenerator qr = new QRCoder.QRCodeGenerator();
             QRCoder.QRCodeData data = qr.CreateQrCode(id, QRCoder.QRCodeGenerator.ECCLevel.L);
             QRCoder.QRCode code = new QRCoder.QRCode(data);
-            System.Drawing.Bitmap bitmap = code.GetGraphic(20, System.Drawing.Color.White, System.Drawing.Color.Transparent, false);
+            System.Drawing.Bitmap bitmap = code.GetGraphic(20, System.Drawing.Color.Black, System.Drawing.Color.White, false);
             using (MemoryStream memory = new MemoryStream())
             {
                 bitmap.Save(memory, System.Drawing.Imaging.ImageFormat.Bmp);

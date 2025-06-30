@@ -1,4 +1,5 @@
-﻿using Prism.Commands;
+﻿using ModuleSettings.Settings;
+using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Regions;
 
@@ -8,10 +9,7 @@ namespace ModuleSettings.ViewModels
     {
         private readonly IRegionManager _regionManager;
         public DelegateCommand<string> NavigateCommand { get; set; }
-        public bool KeepAlive
-        {
-            get { return false; }
-        }
+        public bool KeepAlive => false;
         public MainSettingsViewModel(IRegionManager regionManager)
         {
             _regionManager = regionManager;

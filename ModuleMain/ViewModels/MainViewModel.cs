@@ -6,7 +6,12 @@ using System;
 using Prism.Events;
 using ClassesLibrary.Classes;
 using System.Windows;
-using System.Windows.Forms;
+using ModuleSettings.Settings;
+using ModuleMain.Models;
+using System.Threading.Tasks;
+using System.Diagnostics;
+using ImTools;
+using ModuleMain.Threads;
 
 namespace ModuleMain.ViewModels
 {
@@ -75,12 +80,18 @@ namespace ModuleMain.ViewModels
         public string CPUtemperature
         {
             get { return _cputemperature; }
-            set { SetProperty(ref _cputemperature, value); }
+            set 
+            {
+                SetProperty(ref _cputemperature, value); 
+            }
         }
         public string GPUtemperature
         {
             get { return _gputemperature; }
-            set { SetProperty(ref _gputemperature, value); }
+            set 
+            { 
+                SetProperty(ref _gputemperature, value); 
+            }
         }
         public Visibility SecondVisibility
         {
@@ -108,90 +119,52 @@ namespace ModuleMain.ViewModels
         {
             get { return false; }
         }
-        CancellationTokenSource cts = new CancellationTokenSource();
         public MainViewModel(IEventAggregator ea)
         {
             _ea = ea;
-            _ea.GetEvent<SendEvent>().Subscribe(MessageReceived);
             _ea.GetEvent<SendBoolEvent>().Subscribe(BoolMessageRecived);
-            ThreadController();
-            SecondVisibility = Properties.Settings.Default.DefultSecondVisibility;
-            if (SystemInformation.PowerStatus.BatteryChargeStatus == BatteryChargeStatus.NoSystemBattery || SystemInformation.PowerStatus.BatteryChargeStatus == BatteryChargeStatus.Unknown)
+            SecondVisibility = AppSettings.ShowSeconds ? Visibility.Visible : Visibility.Hidden;
+            ThreadController.Info.CollectionChanged += _info_CollectionChanged;
+            ThreadController.Timer.Tick += UpdateSecondsTimer;
+        }
+
+        private void _info_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
             {
-                _batteryVisibility = Visibility.Hidden;
-            }
-            else
-            {
-                _batteryVisibility = Visibility.Visible;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Replace:
+                    if (e.NewItems[0] is InfoModel im)
+                    {
+                        Date = im.Date;
+                        Time = im.Time;
+                        Day = im.Day;
+                        WorkTimeDay = im.Worktimeday;
+                        WorkTimeHour = im.Worktimehour;
+                        WorkTimeMinut = im.Worktimeminut;
+                        Batary = im.Batary;
+                        CPUtemperature = im.Cputemperature;
+                        GPUtemperature = im.Gputemperature;
+                    }
+                    break;
             }
         }
 
         private void BoolMessageRecived(bool islaptop)
         {
             IsLaptop = islaptop;
+            if (IsLaptop)
+                _batteryVisibility = Visibility.Visible;
+            else
+                _batteryVisibility = Visibility.Hidden;
         }
 
-        private void MessageReceived(Visibility visibility)
-        {
-            Properties.Settings.Default.DefultSecondVisibility = visibility;
-            Properties.Settings.Default.Save();
-        }
-        private void ThreadController()
-        {
-            Thread data = new Thread(() =>
-            {
-                UpdateData();
-            });
-            Thread temperature = new Thread(() =>
-            {
-                UpdateTemerature();
-            });
-            data.Name = "UpdateDataThread";
-            temperature.Name = "UpdateTemperatureThread";
-            data.Start();
-            UpdateSeconds();
-            temperature.Start();
-        }
-        private void UpdateData()
-        {
-            do
-            {
-                Time = SystemInfo.GetStandartTime();
-                Date = SystemInfo.GetDate();
-                Day = SystemInfo.GetDay();
-                WorkTimeDay = SystemInfo.GetPcWorkTimeDay();
-                WorkTimeHour = SystemInfo.GetPcWorkTimeHour();
-                WorkTimeMinut = SystemInfo.GetPcWorkTimeMinut();
-                Batary = SystemInfo.GetNotebookBatary();
-                Thread.Sleep(1000);
-            }
-            while (!cts.IsCancellationRequested);
-        }
-        private void UpdateSeconds()
-        {
-            System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
-            timer.Enabled = true;
-            timer.Tick += UpdateSecondsTimer;
-            timer.Interval = 1000;
-            timer.Start();
-        }
         private void UpdateSecondsTimer(object sender, EventArgs e)
         {
-            Second = SystemInfo.GetSecond();
-            WorkTimeSecond = SystemInfo.GetPcWorkTimeSecond();
-        }
-        private void UpdateTemerature()
-        {
-            do
-            {
-                CPUtemperature = SystemInfo.GetTemperature().Item1;
-                GPUtemperature = SystemInfo.GetTemperature().Item2;
-            }
-            while (!cts.IsCancellationRequested);
+            Second = SystemInfo.GetDate().Item3;
+            WorkTimeSecond = SystemInfo.GetPcWorkTime().Item4;
         }
         public void ConfirmNavigationRequest(NavigationContext navigationContext, Action<bool> continuationCallback)
         {
-            cts.Cancel();
             continuationCallback(true);
         }
         public void OnNavigatedTo(NavigationContext navigationContext)

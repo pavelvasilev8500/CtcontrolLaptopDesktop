@@ -1,11 +1,15 @@
-﻿using Prism.Commands;
+﻿using ModuleSettings.Settings;
+using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Regions;
 using ResourcesLibrary.Resources.Wallpapers.Classes;
+using System;
+using System.Linq;
+using System.Windows;
 
 namespace ModuleSettings.ViewModels
 {
-    class WallpaperSettingsViewModel : BindableBase, IRegionMemberLifetime
+    class WallpaperSettingsViewModel : BindableBase, IRegionMemberLifetime, IConfirmNavigationRequest
     {
         private readonly IRegionManager _regionManager;
         private int SelectedItem { get; set; }
@@ -13,13 +17,13 @@ namespace ModuleSettings.ViewModels
         public DelegateCommand NextCommand { get; set; }
         public DelegateCommand ApplyCommand { get; set; }
         public DelegateCommand PreviousCommand { get; set; }
-        public bool KeepAlive
-        {
-            get { return false; }
-        }
+        public bool KeepAlive => false;
         public WallpaperSettingsViewModel(IRegionManager regionManager)
         {
             _regionManager = regionManager;
+            for (int i = 0; i < Wallpapers.WallpaperDictionaries.Keys.Count; i++)
+                if (Wallpapers.WallpaperDictionaries.Keys.ToList()[i] == AppSettings.Wallpaper)
+                    SelectedItem = i;
             NavigateCommand = new DelegateCommand<string>(Navigate);
             NextCommand = new DelegateCommand(Next);
             ApplyCommand = new DelegateCommand(Apply);
@@ -32,36 +36,40 @@ namespace ModuleSettings.ViewModels
         }
         private void Next()
         {
-            if (SelectedItem < Wallpapers.All_Wallpapers.Count)
-            {
-                Wallpapers.Wallpaper = Wallpapers.All_Wallpapers[SelectedItem];
-                SelectedItem++;
-            }
-            else if (SelectedItem >= Wallpapers.All_Wallpapers.Count)
-            {
+            SelectedItem++;
+            if (SelectedItem >= Wallpapers.WallpaperDictionaries.Keys.Count)
                 SelectedItem = 0;
-                Wallpapers.Wallpaper = Wallpapers.All_Wallpapers[SelectedItem];
-                SelectedItem++;
-            }
+            Wallpapers.Wallpaper = Wallpapers.WallpaperDictionaries.Keys.ToList()[SelectedItem];
         }
         private void Apply()
         {
-            Properties.Settings.Default.DefaultWallpaper = Wallpapers.Wallpaper;
-            Properties.Settings.Default.Save();
+            AppSettings.Wallpaper = Wallpapers.Wallpaper;
         }
         private void Previous()
         {
             if (SelectedItem <= 0)
-            {
-                SelectedItem = Wallpapers.All_Wallpapers.Count;
-                SelectedItem--;
-                Wallpapers.Wallpaper = Wallpapers.All_Wallpapers[SelectedItem];
-            }
-            else if (SelectedItem <= Wallpapers.All_Wallpapers.Count)
-            {
-                SelectedItem--;
-                Wallpapers.Wallpaper = Wallpapers.All_Wallpapers[SelectedItem];
-            }
+                SelectedItem = Wallpapers.WallpaperDictionaries.Keys.Count;
+            SelectedItem--;
+            Wallpapers.Wallpaper = Wallpapers.WallpaperDictionaries.Keys.ToList()[SelectedItem];
+        }
+
+        public void ConfirmNavigationRequest(NavigationContext navigationContext, Action<bool> continuationCallback)
+        {
+            Apply();
+            continuationCallback(true);
+        }
+
+        public void OnNavigatedTo(NavigationContext navigationContext)
+        {
+        }
+
+        public bool IsNavigationTarget(NavigationContext navigationContext)
+        {
+            return true;
+        }
+
+        public void OnNavigatedFrom(NavigationContext navigationContext)
+        {
         }
     }
 }
