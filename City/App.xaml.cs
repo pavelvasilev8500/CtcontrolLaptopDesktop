@@ -27,20 +27,18 @@ namespace City
             {
                 SettingsInitialazation.Set();
                 Settings.Default.FirstStart = false;
-                Settings.Default.ClientId = GenerateClientId.Id();
+                Settings.Default.ClientId = GenerateClientId.Id().Item1;
                 Settings.Default.Save();
             }
-            else
-            {
-                var settings = SettingsInitialazation.Get(); 
-                Languages.Language = AppSettings.Language = settings.Language;
-                Wallpapers.Wallpaper = AppSettings.Wallpaper = settings.Wallpaper;
-                AppSettings.ShowSeconds = settings.ShowSeconds;
-                AppSettings.Autorun = settings.Autorun;
-            }
+            var settings = SettingsInitialazation.Get(); 
+            Languages.Language = AppSettings.Language = settings.Language;
+            Wallpapers.Wallpaper = AppSettings.Wallpaper = settings.Wallpaper;
+            AppSettings.ShowSeconds = settings.ShowSeconds;
+            AppSettings.Autorun = settings.Autorun;
             ThreadController.StartTimer();
             ThreadController.UpdateData(cts);
             ThreadController.StartUpdate();
+            var server = new ClassesLibrary.ServerWork.ClientServer();
             return Container.Resolve<ShellWindow>();
         }
         protected override void RegisterTypes(IContainerRegistry containerRegistry)

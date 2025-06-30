@@ -31,6 +31,7 @@
                 Height="20" 
                 HorizontalAlignment="Stretch" 
                 VerticalAlignment="Top" 
+                PreviewMouseLeftButtonDown="Drag_Move"
                 Opacity="0.465">
             <Border.Effect>
                 <DropShadowEffect ShadowDepth="4" 

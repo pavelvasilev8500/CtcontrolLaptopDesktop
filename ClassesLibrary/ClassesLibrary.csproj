@@ -66,8 +66,8 @@
     <Compile Include="Client\GenerateClientId.cs" />
     <Compile Include="DataModels\ClientDataModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ServerWork\CheckConnection.cs" />
-    <Compile Include="ServerWork\Get.cs" />
+    <Compile Include="ServerWork\ClientServer.cs" />
+    <Compile Include="ServerWork\SendDataModel.cs" />
     <Compile Include="SystemControls\Autorun.cs" />
     <Compile Include="SystemControls\SystemControl.cs" />
     <Compile Include="SystemInfo\InternetInfo.cs" />
