@@ -1,0 +1,22 @@
+﻿<prism:PrismApplication x:Class="City.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:prism="http://prismlibrary.com/"
+             xmlns:svg="http://sharpvectors.codeplex.com/svgc/">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/ResourcesLibrary;component/Resources/Images/ImagesIcons.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/ResourcesLibrary;component/Resources/Styles/Buttons/ControlButtons.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/ResourcesLibrary;component/Resources/Styles/Buttons/ApplicationButton.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/ResourcesLibrary;component/Resources/Styles/Buttons/ApplicationButtons.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/ResourcesLibrary;component/Resources/Styles/Buttons/SettingsButtons.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/ResourcesLibrary;component/Resources/Styles/ComboBoxes/LanguageComboBox.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/ResourcesLibrary;component/Resources/Styles/CheckBoxes/CommonCheckBox.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/ResourcesLibrary;component/Resources/Styles/ToolTip/ToolTip.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/ResourcesLibrary;component/Resources/Styles/Buttons/DialogButton.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</prism:PrismApplication>
