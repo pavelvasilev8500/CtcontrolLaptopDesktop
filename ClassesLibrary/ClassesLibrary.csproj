@@ -65,6 +65,8 @@
     <Compile Include="Client\CreateJson.cs" />
     <Compile Include="Client\GenerateClientId.cs" />
     <Compile Include="DataModels\ClientDataModel.cs" />
+    <Compile Include="DI\Classes\CheckLaptop.cs" />
+    <Compile Include="DI\Interfaces\ICheckLaptop.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServerWork\ClientServer.cs" />
     <Compile Include="ServerWork\SendDataModel.cs" />

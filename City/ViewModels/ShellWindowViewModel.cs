@@ -16,7 +16,6 @@ using City.MainWindowClasses;
 using WarningDialog.Classes;
 using ClassesLibrary.SystemInfo;
 using ModuleSettings.Settings;
-using City.Models;
 using Newtonsoft.Json.Serialization;
 
 namespace City.ViewModels
@@ -184,22 +183,6 @@ namespace City.ViewModels
                 //_ea.GetEvent<SendIdEvent>().Publish(Id());
             }
         }
-
-        //private static string Id()
-        //{
-        //    if (Properties.Settings.Default.FirstStart)
-        //    {
-        //        Properties.Settings.Default.ClientId = GenerateClientId.Id();
-        //        ClientId = Properties.Settings.Default.ClientId;
-        //        Properties.Settings.Default.FirstStart = false;
-        //        Properties.Settings.Default.Save();
-        //    }
-        //    else
-        //    {
-        //        ClientId = Properties.Settings.Default.ClientId;
-        //    }
-        //    return ClientId;
-        //}
 
         private void CloseApp()
         {

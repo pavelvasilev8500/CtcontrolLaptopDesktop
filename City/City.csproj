@@ -153,10 +153,8 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="MainWindowClasses\LaptopCheck.cs" />
     <Compile Include="MainWindowClasses\RunAsAdministrator.cs" />
     <Compile Include="MainWindowClasses\CheckProgramStart.cs" />
-    <Compile Include="Models\ShellModel.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="ViewModels\ShellWindowViewModel.cs" />
     <Compile Include="Views\ShellWindow.xaml.cs">
@@ -235,6 +233,10 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="icon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="DI\Classes\" />
+    <Folder Include="DI\Interfaces\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
